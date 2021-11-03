@@ -1,4 +1,4 @@
-##PendulumEnv
+## PendulumEnv
 1. Observation vector is a tuple of three values representing the angle and the angular velocity: (cos(θ), sin(θ), dθ).
 2. Action vector is a float number representing the torque (bounded from -2.0 to 2.0)
 3. Reward is calculated as a negative weighted sum of squared angle, velocity and torque, so we want to minimize them. 
@@ -6,7 +6,7 @@
 4. The reset method generates the angle (-pi to pi) and angular velocity (-1, 1) from the uniform distribution.
 5. Termination condition is always False.
 
-##AcrobotEnv
+## AcrobotEnv
 1. Observation vector is a tuple of six values representing the state of the system - the angles of the two links 
    (second is relative to the first) and the angular velocities of the links. 
    So, observation = (cos(θ1), sin(θ1), cos(θ2), sin(θ2), dθ1, dθ2).
