@@ -7,25 +7,25 @@ import numpy as np
 
 
 class Network:
-    def __init__(self, env, n_hidden=5, p_variance=0.1):
+    def __init__(self, env, nn=(5, 5), p_variance=0.1):
         self.env = env
-        self.n_hidden = n_hidden
-        self.n_sensors = env.observation_space.shape[0]
+        n_sensors = env.observation_space.shape[0]
         self.is_box_type = isinstance(env.action_space, gym.spaces.box.Box)
-        self.n_motors = env.action_space.shape[0] if self.is_box_type else env.action_space.n
+        n_motors = env.action_space.shape[0] if self.is_box_type else env.action_space.n
+        self.nn = [n_sensors] + list(nn) + [n_motors]
 
-        self.W1 = np.random.randn(n_hidden, self.n_sensors) * p_variance
-        self.W2 = np.random.randn(self.n_motors, n_hidden) * p_variance
-        self.b1 = np.zeros(shape=(n_hidden, 1))
-        self.b2 = np.zeros(shape=(self.n_motors, 1))
+        self.Ws, self.bs = [], []
+        for i in range(len(self.nn) - 1):
+            self.Ws.append(np.random.randn(self.nn[i], self.nn[i + 1]) * p_variance)
+            self.bs.append(np.zeros(shape=(self.nn[i + 1], 1)))
 
     def update(self, observation):
-        observation.resize(self.n_sensors, 1)
-        Z1 = np.dot(self.W1, observation) + self.b1
-        A1 = np.tanh(Z1)
-        Z2 = np.dot(self.W2, A1) + self.b2
-        A2 = np.tanh(Z2)
-        action = A2 if self.is_box_type else np.argmax(A2)
+        observation.resize(self.nn[0], 1)
+        tmp = observation
+        for i in range(len(self.nn) - 1):
+            tmp = np.dot(self.Ws[i], tmp) + self.bs[i]
+            tmp = np.tanh(tmp)
+        action = tmp if self.is_box_type else np.argmax(tmp)
         return action
 
     def evaluate(self, n_episodes, render=False):
@@ -55,33 +55,35 @@ class Network:
         return sum(result) / n_episodes
 
     def get_n_params(self):
-        return self.n_hidden * (self.n_sensors + 1) + self.n_motors * (self.n_hidden + 1)
+        n = 0
+        for i in range(len(self.nn) - 1):
+            n += self.nn[i + 1] * (self.nn[i] + 1)
+        return n
 
     def set_params(self, genotype):
-        n1 = self.n_hidden * self.n_sensors
-        self.W1 = np.resize(genotype[:n1], (self.n_hidden, self.n_sensors))
-        n2 = n1 + self.n_motors * self.n_hidden
-        self.W2 = np.resize(genotype[n1:n2], (self.n_motors, self.n_hidden))
-        n3 = n2 + self.n_hidden
-        self.b1 = np.resize(genotype[n2:n3], (self.n_hidden, 1))
-        n4 = n3 + self.n_motors
-        self.b2 = np.resize(genotype[n3:n4], (self.n_motors, 1))
+        n = 0
+        for i in range(len(self.nn) - 1):
+            n1 = n + self.nn[i] * self.nn[i + 1]
+            self.Ws[i] = np.resize(genotype[n:n1], (self.nn[i + 1], self.nn[i]))
+            n2 = n1 + self.nn[i + 1]
+            self.bs[i] = np.resize(genotype[n1:n2], (self.nn[i + 1], 1))
+            n += n2
 
 
 def main(
     gym_env,
     population_size=10,
-    n_hidden=20,
+    nn=(5,),
     gene_std=0.1,
     mut_std=0.02,
     n_episodes=3,
     n_generations=100,
-    seed=777,
+    seed=7777,
 ):
     np.random.seed(seed)
 
     env = gym.make(gym_env)
-    agent = Network(env, n_hidden)
+    agent = Network(env, nn)
     n_params = agent.get_n_params()
     population = np.random.randn(population_size, n_params) * gene_std
 
@@ -104,5 +106,5 @@ def main(
 
 
 if __name__ == "__main__":
-    main("CartPole-v0")  # works
-    # main("Pendulum-v1", population_size=100, n_episodes=5, n_generations=100, mut_std=0.05, n_hidden=20)  # rotates
+    # main("CartPole-v0")  # works
+    main("Pendulum-v1", nn=(10, 10, 10), population_size=100, n_episodes=5, n_generations=20)  # rotates
