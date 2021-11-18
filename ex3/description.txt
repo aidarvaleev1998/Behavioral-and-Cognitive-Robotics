@@ -1,0 +1,18 @@
+Some random walk around the area, stands still as meets the target
+Seed 17, avg fintess 388.45
+Seed 19, avg fintess 283.25
+Seed 37, avg fintess 441.70
+
+Slow not-effective spiral moves, circulates around (or near) the target
+Seed Seed 39, avg fintess 213.05 
+Seed 57, avg fintess 167.20
+Seed 11, avg fintess 304.25
+Seed 77, avg fintess 191.50
+
+Some long circular moves, counter-clockwise, stands still as meets the target
+Seed 27, avg fintess 405.80
+Seed 31, avg fintess 392.65
+Seed 47, avg fintess 367.45
+
+Generally, after the agents pass near the target, they stop the spiral moves and eihter repeat the previous trajectory or make a spiral move in other direction.
+Under "spiral moves" I mean that the agent circulates and the center of drawn circles is moving towards single direction.
