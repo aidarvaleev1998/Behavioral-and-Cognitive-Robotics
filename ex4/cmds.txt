@@ -1,0 +1,9 @@
+git clone https://github.com/DLR-RM/rl-baselines3-zoo.git
+
+docker pull stablebaselines/rl-baselines3-zoo-cpu && cd rl-baselines3-zoo-cpu
+
+make docker-cpu
+
+./scripts/run_docker_cpu.sh python train.py --algo ppo --env Acrobot-v1
+
+./scripts/run_docker_cpu.sh python -m utils.record_video -f logs/ --algo ppo --env Acrobot-v1 -n 1000 --load-best
